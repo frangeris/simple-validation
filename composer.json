@@ -1,0 +1,21 @@
+{
+  "name": "frangeris/simple-validation",
+  "description": "Simple, fast, beautiful way to make validations for forms or anything you can think of",
+  "license": "MIT",
+  "type": "library",
+  "homepage": "https://github.com/frangeris/simple-validation",
+  "authors": [
+    {
+      "name": "Frangeris Peguero",
+      "email": "frangeris.20@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.3.0"
+  },
+  "autoload": {
+    "psr-0": {
+      "Simple": "src/"
+    }
+  }
+}
