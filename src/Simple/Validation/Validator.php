@@ -319,5 +319,11 @@ class Validator
 		if(filter_var($value, $filter))
 			return true;
 		return false;
-	}	
+	}
+
+	/**
+	 * Validate that a file has been uploaded
+	 */
+	public function _fuploaded()
+	{}
 }
