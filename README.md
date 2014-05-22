@@ -1,7 +1,7 @@
 Simple validation for PHP 5.3+
 ==============================
 
-There are so many differents ways to make a validation for forms on php, each framework(Laravel 4+, Symfony 2+, Codeignitier, FuelPHP, CakePHP, bla bla bla) has their own implementation on validations, ok, that's ok, it is expected that they supply us that funcionality, but, sometimes all those validations are complicated, sometime we need to insert the rules inside a model when we just wanna validate a simple html form and get the possible failures, just simple like that, it ok that you insert your rules inside your model, this is another way just with supper powers...
+There are so many differents ways to make a validation for forms on php, each framework(Laravel 4+, Symfony 2+, CodeIgniter , FuelPHP, CakePHP, bla bla bla) has their own implementation on validations, ok, that's ok, it is expected that they supply us that funcionality, but, sometimes all those validations are complicated, sometimes we dont want to insert the rules inside a model when we just wanna validate a simple html form and get the possible failures, just simple like that, it ok that you insert your rules inside your model, this is another way just with super powers...
 
 ### Installation
 
@@ -30,7 +30,7 @@ In general, every form could have **rules**, what is a rule?, rule is just what 
 
 ### So let's rock and roll:
 
-Here is an example of the structure for write your own validations, in this case I wanna validate a form for just save users over 18 years old, and of course valid first name, last name and email
+Here is an example of the structure for write your own validations, in this case I wanna validate a form for just save users over 18 years old, and of course a valid first name, last name and email.
 
 ```html
 <form method="post" action="#">
@@ -42,6 +42,9 @@ Here is an example of the structure for write your own validations, in this case
 </form>  
 
 ```
+
+
+file with rules:
 
 ```php
 
@@ -103,7 +106,7 @@ return array(
 
 ```
 
-As you can see `frm_user_add` is the name of a form, why inside a hidden field? cuz is the onlyt way the the form name in POST, there are some hacks appending the name uwing js, for now, do this way :), followed by an associative array for the fields.
+As you can see `frm_user_add` is the name of a form, why inside a hidden field? cuz is the only way to get the form name in POST, there are some hacks appending the name using js, but for now do this way :), followed by an associative array for the fields.
 
 `email` is a field inside the form `frm_build_add`, we wanna that this field exist and must to be **valid** using the [filters inside PHP](http://www.php.net/manual/en/filter.filters.php), depending of each error, the string inside message is gonna be returned... Awesome right? :D
 
@@ -112,3 +115,46 @@ As you can see `frm_user_add` is the name of a form, why inside a hidden field? 
 For `l_name` acts the same rule that `f_name`...
 
 And the last one `age`, I just wanna that exist, and the minimun value must to be 18, and that's it... :)
+
+In the PHP side just call the validator class and pass the fields on request and the name of the form:
+
+This example is using [phalcon framework](http://phalconphp.com/en/)
+
+```php
+
+<?php
+
+use Simple\Validation\Validator;
+
+class ApplicationController extends \Phalcon\Mvc\Controller
+{
+	public function addAction()
+	{
+		if($this->request->isPost())
+		{
+			$request = $this->request->getPost();
+
+			// Here make the trick for pass the rules
+			$validations = require_once(URL_TO_YOUR_FILE_WITH_RULES);
+    		$validator = Validator::getInstance($validations);
+
+    		// Begin the validation (<form_name>, <array_with_values>)
+			if($validator->isValid($request['_form'], $request))
+			{
+				echo 'valid';
+				// Do your stuff
+				
+			} else
+				echo 'Error: '.$validator->getLastError(true));
+			
+			// If you wanna all the errors with messages just call
+			print_r($validator->getErrors());
+		}
+	}	
+}
+
+```
+
+PS: If you are using phalcon, dont do this in this way, create a DI inside your services and use it as di...
+
+The required function can be placed in another place, just remember that the `isValid` method needs this array for validate...
