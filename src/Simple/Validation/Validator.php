@@ -326,4 +326,11 @@ class Validator
 	 */
 	public function _fuploaded()
 	{}
+
+	/**
+	 * Validate that the size of a file is more 
+	 * than integer given
+	 */
+	public function _fmax()
+	{}	
 }
