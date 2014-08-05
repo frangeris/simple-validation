@@ -3,10 +3,7 @@
 /**
  * Validations manager for validate fields forms
  * 
- * @version 0.0.1
- * @todo
- 		- Move validations to .yml file
- 		- Minify return * as ternary
+ * @version 0.0.2
  */
 class Validator
 {
@@ -45,13 +42,16 @@ class Validator
 	private function __construct(array $validations)
 	{
 		$this->validations = $validations;
-		$this->collection = array(
-			'regex' 	=> '_regex',
-			'min' 		=> '_min',
-			'max' 		=> '_max',
-			'required' 	=> '_required',
-			'filter' 	=> '_filter',
-		);
+		$this->collection = [
+			'regex' 		=> '_regex',
+			'min' 			=> '_min',
+			'max' 			=> '_max',
+			'required' 		=> '_required',
+			'filter' 		=> '_filter',
+			'uploaded'		=> '_uploaded',
+			'file_max'		=> '_file_max',
+			'allow_format'	=> '_allow_format'
+		];	
 	}
 
 	/**
@@ -75,17 +75,28 @@ class Validator
 	 * @param $form_name Name of the form defined on validations file
 	 * @param array $fields Fields of the form send on request
 	 * @return boolean
-	 * @throws Exception If the form do not have a field with form name
 	 */
 	public function isValid($form_name, $fields)
 	{
 		if($this->ifExist($form_name))
-		{ 
+		{
+			if(isset($_FILES))
+				$fields = array_merge($fields, $_FILES);
 			$requirements = $this->get($form_name, 'requirements');			
-			$existing = array_diff_key($requirements, $fields);	
-			if($existing) // Some fields with validation dont exist on fields request
-				throw new \Exception("Error processing validation, there are fields with validation that do not exist in the request post values (".implode(', ', array_keys($existing)).")", 1);
-			foreach ($fields as $field => $value) 
+			$difference = array_diff_key($requirements, $fields);	
+			if($difference) // Some fields with validation dont exist on fields request
+			{				
+				foreach($difference as $field => $reqs) // Are the required?
+					if(array_key_exists('required', $reqs))
+					{
+						/* Error processing validation, there are fields with 
+						validation that do not exist in the request post values */
+						$this->errorEvent[$field] = 'required';
+						$this->setErrorEvent($form_name, $field);				
+						return false;
+					}
+			}		
+			foreach ($fields as $field => $value) // Continue verifying others fields that exist
 			{
 				if(isset($requirements[$field]) && !$this->verify($value, $requirements[$field], $field)) // Some field failed
 				{
@@ -106,7 +117,7 @@ class Validator
 	 */
 	public function get($form_name, $parameter)
 	{
-		$to_sent = array();		
+		$to_sent = [];		
 		$fields = isset($this->validations[$form_name])?$this->validations[$form_name] :null;
 		if(!empty($fields))
 		{				
@@ -145,7 +156,7 @@ class Validator
 	 * Load the requirements inside this class
 	 *
 	 * @param array $requirements Requirements to load
-	 * @return &Validator
+	 * @return &\Simple\Validation\Validator
 	 */
 	public function &load(array $requirements)
 	{
@@ -153,8 +164,7 @@ class Validator
 		{
 			$reqs = array();
 			foreach ($requirements as $obj => $fields) 
-			{
-				// $this->reqObject[] = $obj;
+			{				
 				foreach ($fields as $field => $params)
 					$reqs[$field] = $params;
 			} $this->reqLoaded = $reqs;
@@ -199,9 +209,9 @@ class Validator
 	{
 		$field = is_array($field)?key(array_slice($field, 0, 1)) :$field;
 		$requirements = $this->validations[$form_name];
-		if($errorMessage = isset($requirements[$field]['messages']['on'.ucfirst($this->errorEvent[$field])])?$requirements[$field]['messages']['on'.ucfirst($this->errorEvent[$field])]:null)
+		if($errorMessage = isset($requirements[$field]['messages']['on_'.$this->errorEvent[$field]])?$requirements[$field]['messages']['on_'.$this->errorEvent[$field]] :null)
 		{
-			$this->errorEvent['content'] = array('field' => $field, 'message' => $errorMessage);
+			$this->errorEvent['content'] = ['field' => $field, 'message' => $errorMessage];
 			return $errorMessage;
 		} throw new \Exception("If the field \"{$field}\" has requirements, it must have an error message for each them.", 1);				
 	}
@@ -244,6 +254,12 @@ class Validator
     	{ return false; }
 	}
 
+	/**
+	 * Get the requirements of a specific or all forms
+	 * 
+	 * @param string $formName Name of the form [optional]
+	 * @return array
+	 */
 	public function getRequirements($formName = null)
 	{
 		if(!empty($formName))
@@ -321,16 +337,45 @@ class Validator
 		return false;
 	}
 
-	/**
-	 * Validate that a file has been uploaded
-	 */
-	public function _fuploaded()
-	{}
 
 	/**
-	 * Validate that the size of a file is more 
-	 * than integer given
+	 * Check if a file has been uploaded verifying by rule
+	 * 
+	 * @param array $file File array using $_FILE
+	 * @return boolean
 	 */
-	public function _fmax()
-	{}	
+	public function _uploaded($file)
+	{
+		if(isset($file['name']) && $file['size'] > 0 && is_uploaded_file($file['tmp_name']))
+			return true;
+		return false;
+	}
+
+	/**
+	 * Check if the file math with the max size specified on rule
+	 * 
+	 * @return boolean
+	 * @todo
+	 		- Finish
+	 */
+	public function _file_max($file, $expression)
+	{
+		if($file['size'] < ($empression * 1024)) // Using MB for comparation
+			return true;
+		return false;
+	}
+
+	/**
+	 * Verify if the format of the uploaded file match with required
+	 * @param array $file File array using $_FILE 
+	 * @param array $expression Collection of extension allowed
+	 * @return boolean
+	 */
+	public function _allow_format($file, $expression)
+	{
+		$info = pathinfo($file['name']);
+		if(in_array($info['extension'], $expression))
+			return true;
+		return false;
+	}
 }
