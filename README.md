@@ -167,4 +167,3 @@ $di->set('validator', function() use ($config)
     $validations = require_once($config->security->validations);
     return Simple\Validation\Validator::getInstance($validations);
 });
-
