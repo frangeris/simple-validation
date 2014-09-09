@@ -361,8 +361,8 @@ class Validator
 	public function _file_max($file, $expression)
 	{
 		if($file['size'] < ($expression * 1024)) // Using MB for comparation
-			return true;
-		return false;
+			return false;
+		return true;
 	}
 
 	/**
