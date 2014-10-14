@@ -3,7 +3,7 @@
 /**
  * Validations manager for validate fields forms
  * 
- * @version 0.0.2
+ * @version 0.0.3
  */
 class Validator
 {
@@ -353,14 +353,14 @@ class Validator
 
 	/**
 	 * Check if the file math with the max size specified on rule
-	 * 
+	 *
+	 * @param array $file Array with data of the file
+	 * @param mixed $expression Expression to compare
 	 * @return boolean
-	 * @todo
-	 		- Finish
 	 */
 	public function _file_max($file, $expression)
 	{
-		if($file['size'] < ($expression / 1024)) // Using MB for comparation
+		if(($file['size'] / 1024) < $expression) // Using MB for comparation
 			return false;
 		return true;
 	}
