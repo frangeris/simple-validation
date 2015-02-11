@@ -30,6 +30,7 @@ In general, every form could have **rules**, what is a rule?, rule is just what 
 * uploaded (validate that the file has been uploaded)
 * file_max (validate the max size of the file using MB for comparation)
 * allow_format (specify with formats are allowed for the file uploaded)
+* not_equal (verify that the value is not equal to expressed pattern)
 
 ### So let's rock and roll:
 
@@ -136,8 +137,7 @@ class ApplicationController extends \Phalcon\Mvc\Controller
 			$request = $this->request->getPost();
 
 			// Here make the trick for pass the rules
-			$validations = require_once(URL_TO_YOUR_FILE_WITH_RULES);
-    		$validator = Validator::getInstance($validations);
+    		$validator = Validator::getInstance(require_once(URL_TO_YOUR_FILE_WITH_RULES));
 
     		// Begin the validation (<form_name>, <array_with_values>)
 			if($validator->isValid($request, $request))

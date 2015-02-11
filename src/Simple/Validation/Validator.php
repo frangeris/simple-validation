@@ -51,6 +51,7 @@ class Validator
 			'uploaded'		=> '_uploaded',
 			'file_max'		=> '_file_max',
 			'allow_format'	=> '_allow_format'
+			'not_equal'		=> '_not_equal'
 		];	
 	}
 
@@ -367,6 +368,7 @@ class Validator
 
 	/**
 	 * Verify if the format of the uploaded file match with required
+	 * 
 	 * @param array $file File array using $_FILE 
 	 * @param array $expression Collection of extension allowed
 	 * @return boolean
@@ -377,5 +379,17 @@ class Validator
 		if(in_array($info['extension'], $expression))
 			return true;
 		return false;
+	}
+
+	/**
+	 * Verify if the value is not equal to the pattern
+	 * 
+	 * @param mixed $value Value filled to compare
+	 * @param string $patten Pattern for use as rule in comparation of values
+	 * @return boolean
+	 */
+	public function _not_equal($value, $pattern)
+	{
+		return (boolean) ($value !== $pattern);
 	}
 }
