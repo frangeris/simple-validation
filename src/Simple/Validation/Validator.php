@@ -3,7 +3,7 @@
 /**
  * Validations manager for validate fields forms
  * 
- * @version 0.0.3
+ * @version 0.9
  */
 class Validator
 {
@@ -50,7 +50,7 @@ class Validator
 			'filter' 		=> '_filter',
 			'uploaded'		=> '_uploaded',
 			'file_max'		=> '_file_max',
-			'allow_format'	=> '_allow_format'
+			'allow_format'	=> '_allow_format',
 			'not_equal'		=> '_not_equal'
 		];	
 	}
@@ -58,10 +58,10 @@ class Validator
 	/**
 	 * Keeping concurrence
 	 * 
-	 * @param  array  $validation Validations
+	 * @param array $validation Validations
 	 * @return \Simple\Validation\Validator
 	 */
-	public static function getInstance(array $validations)
+	public static function getInstance($validations = [])
 	{
 		if(null === self::$_instance)
 			self::$_instance = new self($validations);
@@ -69,8 +69,7 @@ class Validator
 	}
 
 	/**
-	 * Check if the values received are validated
-	 * using Validate.class from sources, using 
+	 * Check if the values received are valid using 
 	 * requirements defined for each field
 	 *
 	 * @param $form_name Name of the form defined on validations file
@@ -85,27 +84,35 @@ class Validator
 				$fields = array_merge($fields, $_FILES);
 			$requirements = $this->get($form_name, 'requirements');			
 			$difference = array_diff_key($requirements, $fields);	
-			if($difference) // Some fields with validation dont exist on fields request
+
+			// Some fields with validation dont exist on fields request
+			if($difference) 
 			{				
 				foreach($difference as $field => $reqs) // Are the required?
 					if(array_key_exists('required', $reqs))
 					{
-						/* Error processing validation, there are fields with 
-						validation that do not exist in the request post values */
+						// Error processing validation, there are fields with 
+						// validation that do not exist in the request post values
 						$this->errorEvent[$field] = 'required';
 						$this->setErrorEvent($form_name, $field);				
 						return false;
 					}
-			}		
-			foreach ($fields as $field => $value) // Continue verifying others fields that exist
+			}
+
+			// Continue verifying others fields that exist
+			foreach ($fields as $field => $value) 
 			{
 				if(isset($requirements[$field]) && !$this->verify($value, $requirements[$field], $field)) // Some field failed
 				{
 					$this->setErrorEvent($form_name, $field);									
 					return false;					
 				}
-			} return true; // All data is correct
-		} return true; // Dont exist validation for this form
+			} 
+
+			return true; // All data is correct
+		} 
+
+		return true; // Dont exist validation for this form
 	}	
 
 	/**
@@ -124,7 +131,9 @@ class Validator
 		{				
 			foreach ($fields as $field => $value) 
 				$to_sent[$field] = $value[$parameter];
-		} return $to_sent;
+		} 
+
+		return $to_sent;
 	}
 
 	/**
@@ -150,7 +159,9 @@ class Validator
 				$this->errorEvent[key(array_slice($extraField, 0, 1))] = $key;
 				return false;							
 			}
-		} return true;
+		} 
+
+		return true;
 	}
 
 	/**
@@ -163,13 +174,17 @@ class Validator
 	{
 		if(!empty($requirements))
 		{
-			$reqs = array();
+			$reqs = [];
 			foreach ($requirements as $obj => $fields) 
 			{				
 				foreach ($fields as $field => $params)
 					$reqs[$field] = $params;
-			} $this->reqLoaded = $reqs;
-		} return $this;
+			} 
+
+			$this->reqLoaded = $reqs;
+		} 
+
+		return $this;
 	}
 
 	/**
@@ -214,7 +229,9 @@ class Validator
 		{
 			$this->errorEvent['content'] = ['field' => $field, 'message' => $errorMessage];
 			return $errorMessage;
-		} throw new \Exception("If the field \"{$field}\" has requirements, it must have an error message for each them.", 1);				
+		} 
+
+		throw new \Exception("If the field \"{$field}\" has requirements, it must have an error message for each them.", 1);				
 	}
 
 	/**
@@ -246,13 +263,16 @@ class Validator
 	 */
 	public function checkRegExp($regex)
 	{   
-    	try {
+    	try 
+    	{
     		$status = (@preg_match($regex, '') !== false);
     		if($status)
     			return true;
     		return false;
     	} catch(\Exception $ex)
-    	{ return false; }
+    	{ 
+    		return false; 
+    	}
 	}
 
 	/**

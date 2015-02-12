@@ -11,7 +11,8 @@
     }
   ],
   "require": {
-    "php": ">=5.5.0"
+    "php": ">=5.5.0",
+    "phpunit/phpunit": "4.7.*@dev"
   },
   "autoload": {
     "psr-0": {
